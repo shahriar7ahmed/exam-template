@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Auth App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+                👑 Admin Panel
+            </h1>
+            <div class="flex items-center gap-4">
+                <a href="dashboard.html" class="text-gray-400 hover:text-white transition">← Back to Dashboard</a>
+                <button onclick="logout()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto p-8">
+        <!-- Header Section -->
+        <div
+            class="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-6 rounded-2xl border border-purple-500/30 mb-8">
+            <h2 class="text-2xl font-bold mb-2">User Management 👥</h2>
+            <p class="text-gray-400">View, edit, and manage all registered users</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                <div class="text-3xl font-bold text-blue-400" id="totalUsers">0</div>
+                <div class="text-gray-400 text-sm">Total Users</div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                <div class="text-3xl font-bold text-purple-400" id="totalAdmins">0</div>
+                <div class="text-gray-400 text-sm">Admins</div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                <div class="text-3xl font-bold text-green-400" id="regularUsers">0</div>
+                <div class="text-gray-400 text-sm">Regular Users</div>
+            </div>
+        </div>
+
+        <!-- Message Display -->
+        <div id="message" class="hidden mb-4"></div>
+
+        <!-- Users Table -->
+        <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold">All Users</h3>
+                <button onclick="loadUsers()"
+                    class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition">
+                    🔄 Refresh
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-700/50">
+                        <tr>
+                            <th class="p-4 text-left text-sm font-medium text-gray-300">Name</th>
+                            <th class="p-4 text-left text-sm font-medium text-gray-300">Email</th>
+                            <th class="p-4 text-left text-sm font-medium text-gray-300">Role</th>
+                            <th class="p-4 text-left text-sm font-medium text-gray-300">Joined</th>
+                            <th class="p-4 text-left text-sm font-medium text-gray-300">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold">Edit User</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+
+            <form id="editForm" class="space-y-4">
+                <input type="hidden" id="editUserId">
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Name</label>
+                    <input type="text" id="editName"
+                        class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                    <input type="email" id="editEmail"
+                        class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Role</label>
+                    <select id="editRole"
+                        class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal()"
+                        class="flex-1 p-3 bg-gray-600 hover:bg-gray-500 rounded-lg font-medium transition">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="flex-1 p-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-medium transition">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Require admin access
+        if (!requireAdmin()) {
+            // Will redirect to dashboard
+        }
+
+        let allUsers = [];
+
+        // Load all users
+        async function loadUsers() {
+            try {
+                allUsers = await getAllUsers();
+
+                // Update stats
+                document.getElementById('totalUsers').textContent = allUsers.length;
+                document.getElementById('totalAdmins').textContent = allUsers.filter(u => u.role === 'admin').length;
+                document.getElementById('regularUsers').textContent = allUsers.filter(u => u.role === 'user').length;
+
+                // Render table
+                document.getElementById('usersTable').innerHTML = allUsers.map(user => `
+                    <tr class="border-b border-gray-700 hover:bg-gray-700/30 transition">
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold">
+                                    ${user.name.charAt(0).toUpperCase()}
+                                </div>
+                                <span class="font-medium">${user.name}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-gray-400">${user.email}</td>
+                        <td class="p-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium ${user.role === 'admin'
+                        ? 'bg-purple-500/20 text-purple-400'
+                        : 'bg-blue-500/20 text-blue-400'
+                    }">
+                                ${user.role.toUpperCase()}
+                            </span>
+                        </td>
+                        <td class="p-4 text-gray-400">${new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td class="p-4">
+                            <div class="flex gap-2">
+                                <button onclick="openEditModal('${user._id}')"
+                                    class="px-3 py-1 bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 rounded-lg text-sm transition">
+                                    Edit
+                                </button>
+                                <button onclick="confirmDelete('${user._id}', '${user.name}')"
+                                    class="px-3 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-sm transition">
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                showMessage('message', 'Failed to load users: ' + error.message, true);
+            }
+        }
+
+        // Open edit modal
+        function openEditModal(userId) {
+            const user = allUsers.find(u => u._id === userId);
+            if (!user) return;
+
+            document.getElementById('editUserId').value = user._id;
+            document.getElementById('editName').value = user.name;
+            document.getElementById('editEmail').value = user.email;
+            document.getElementById('editRole').value = user.role;
+
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editModal').classList.remove('flex');
+        }
+
+        // Handle edit form submit
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const userId = document.getElementById('editUserId').value;
+            const data = {
+                name: document.getElementById('editName').value,
+                email: document.getElementById('editEmail').value,
+                role: document.getElementById('editRole').value
+            };
+
+            try {
+                await updateUser(userId, data);
+                showMessage('message', 'User updated successfully!');
+                closeModal();
+                loadUsers();
+            } catch (error) {
+                showMessage('message', 'Failed to update: ' + error.message, true);
+            }
+        });
+
+        // Delete confirmation
+        async function confirmDelete(userId, userName) {
+            if (confirm(`Are you sure you want to delete "${userName}"?`)) {
+                try {
+                    await deleteUser(userId);
+                    showMessage('message', 'User deleted successfully!');
+                    loadUsers();
+                } catch (error) {
+                    showMessage('message', 'Failed to delete: ' + error.message, true);
+                }
+            }
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Load users on page load
+        loadUsers();
+    </script>
+</body>
+
+</html>
