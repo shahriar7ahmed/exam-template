@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Auth App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                🔐 Auth App
+            </h1>
+            <div class="flex items-center gap-4">
+                <span id="userRole"
+                    class="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400"></span>
+                <span id="userName" class="text-gray-300"></span>
+                <button onclick="logout()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto p-8">
+        <!-- Welcome Section -->
+        <div class="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-6 rounded-2xl border border-blue-500/30 mb-8">
+            <h2 class="text-2xl font-bold mb-2">Welcome back, <span id="welcomeName"></span>! 👋</h2>
+            <p class="text-gray-400">Manage your profile settings below</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Profile Info Card -->
+            <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700">
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <span class="text-2xl">👤</span> Profile Information
+                </h3>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
+                        <span class="text-gray-400">Name</span>
+                        <span id="profileName" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
+                        <span class="text-gray-400">Email</span>
+                        <span id="profileEmail" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
+                        <span class="text-gray-400">Role</span>
+                        <span id="profileRole" class="font-medium capitalize"></span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
+                        <span class="text-gray-400">Member Since</span>
+                        <span id="profileDate" class="font-medium"></span>
+                    </div>
+                </div>
+
+                <!-- Admin Panel Link -->
+                <div id="adminLink" class="hidden mt-6">
+                    <a href="admin.html"
+                        class="block w-full p-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-center font-medium transition">
+                        👑 Go to Admin Panel
+                    </a>
+                </div>
+            </div>
+
+            <!-- Update Profile Card -->
+            <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700">
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <span class="text-2xl">✏️</span> Update Profile
+                </h3>
+
+                <form id="updateForm" class="space-y-4">
+                    <!-- Message Display -->
+                    <div id="message" class="hidden"></div>
+
+                    <div>
+                        <label for="updateName" class="block text-sm font-medium text-gray-300 mb-2">Name</label>
+                        <input type="text" id="updateName"
+                            class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            placeholder="Your name">
+                    </div>
+
+                    <div>
+                        <label for="updateEmail" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                        <input type="email" id="updateEmail"
+                            class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            placeholder="Your email">
+                    </div>
+
+                    <div>
+                        <label for="updatePassword" class="block text-sm font-medium text-gray-300 mb-2">
+                            New Password <span class="text-gray-500">(leave blank to keep current)</span>
+                        </label>
+                        <input type="password" id="updatePassword"
+                            class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            placeholder="New password">
+                    </div>
+
+                    <button type="submit" id="submitBtn"
+                        class="w-full p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition transform hover:scale-[1.02] active:scale-[0.98]">
+                        Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Require authentication
+        if (!requireAuth()) {
+            // Will redirect to login
+        }
+
+        // Load profile on page load
+        async function loadProfile() {
+            try {
+                const user = await getProfile();
+
+                // Update navbar
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('userRole').textContent = user.role.toUpperCase();
+
+                // Update welcome section
+                document.getElementById('welcomeName').textContent = user.name;
+
+                // Update profile info
+                document.getElementById('profileName').textContent = user.name;
+                document.getElementById('profileEmail').textContent = user.email;
+                document.getElementById('profileRole').textContent = user.role;
+                document.getElementById('profileDate').textContent = new Date(user.createdAt).toLocaleDateString();
+
+                // Update form fields
+                document.getElementById('updateName').value = user.name;
+                document.getElementById('updateEmail').value = user.email;
+
+                // Show admin link if admin
+                if (user.role === 'admin') {
+                    document.getElementById('adminLink').classList.remove('hidden');
+                    document.getElementById('userRole').classList.remove('bg-blue-500/20', 'text-blue-400');
+                    document.getElementById('userRole').classList.add('bg-purple-500/20', 'text-purple-400');
+                }
+            } catch (error) {
+                console.error('Failed to load profile:', error);
+                logout();
+            }
+        }
+
+        // Handle profile update
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage('message');
+
+            const name = document.getElementById('updateName').value;
+            const email = document.getElementById('updateEmail').value;
+            const password = document.getElementById('updatePassword').value;
+            const submitBtn = document.getElementById('submitBtn');
+
+            const updateData = {};
+            if (name) updateData.name = name;
+            if (email) updateData.email = email;
+            if (password) updateData.password = password;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            try {
+                const result = await updateProfile(updateData);
+                showMessage('message', 'Profile updated successfully!');
+
+                // Update local storage
+                setUser(result.user);
+
+                // Reload profile display
+                loadProfile();
+
+                // Clear password field
+                document.getElementById('updatePassword').value = '';
+            } catch (error) {
+                showMessage('message', error.message, true);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Changes';
+            }
+        });
+
+        loadProfile();
+    </script>
+</body>
+
+</html>
