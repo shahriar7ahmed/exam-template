@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8 text-center">📦 Item Management</h1>
+
+        <!-- Form -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-8">
+            <h2 class="text-xl font-semibold mb-4">Add New Item</h2>
+            <form id="itemForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" id="name" placeholder="Name" required class="p-3 bg-gray-700 rounded-lg">
+                <input type="text" id="description" placeholder="Description" required
+                    class="p-3 bg-gray-700 rounded-lg">
+                <input type="number" id="price" placeholder="Price" required class="p-3 bg-gray-700 rounded-lg">
+                <input type="text" id="category" placeholder="Category" required class="p-3 bg-gray-700 rounded-lg">
+                <button type="submit" id="submitBtn" class="md:col-span-2 p-3 bg-blue-600 rounded-lg hover:bg-blue-700">
+                    Add Item
+                </button>
+            </form>
+        </div>
+
+        <!-- Items Table -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-xl font-semibold mb-4">All Items</h2>
+            <table class="w-full">
+                <thead class="bg-gray-700">
+                    <tr>
+                        <th class="p-3 text-left">Name</th>
+                        <th class="p-3 text-left">Description</th>
+                        <th class="p-3 text-left">Price</th>
+                        <th class="p-3 text-left">Category</th>
+                        <th class="p-3 text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
